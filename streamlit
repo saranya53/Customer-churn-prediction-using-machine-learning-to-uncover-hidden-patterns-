@@ -1,0 +1,65 @@
+import streamlit as st
+import pandas as pd
+import joblib
+
+# Load model and preprocessor
+model = joblib.load('churn_model.pkl')
+preprocessor = joblib.load('preprocessor.pkl')
+
+# App title and description
+st.title("Customer Churn Prediction App")
+st.subheader("Predicting customer churn using machine learning to uncover hidden patterns")
+
+# Sidebar inputs
+st.sidebar.header("Customer Information")
+
+def user_input_features():
+    gender = st.sidebar.selectbox("Gender", ['Male', 'Female'])
+    senior_citizen = st.sidebar.selectbox("Senior Citizen", [0, 1])
+    partner = st.sidebar.selectbox("Has Partner?", ['Yes', 'No'])
+    dependents = st.sidebar.selectbox("Has Dependents?", ['Yes', 'No'])
+    tenure = st.sidebar.slider("Tenure (months)", 0, 72, 12)
+    phone_service = st.sidebar.selectbox("Phone Service", ['Yes', 'No'])
+    multiple_lines = st.sidebar.selectbox("Multiple Lines", ['Yes', 'No', 'No phone service'])
+    internet_service = st.sidebar.selectbox("Internet Service", ['DSL', 'Fiber optic', 'No'])
+    contract = st.sidebar.selectbox("Contract", ['Month-to-month', 'One year', 'Two year'])
+    paperless_billing = st.sidebar.selectbox("Paperless Billing", ['Yes', 'No'])
+    payment_method = st.sidebar.selectbox("Payment Method", ['Electronic check', 'Mailed check',
+                                                             'Bank transfer (automatic)', 'Credit card (automatic)'])
+    monthly_charges = st.sidebar.slider("Monthly Charges", 0.0, 150.0, 70.0)
+    total_charges = st.sidebar.slider("Total Charges", 0.0, 10000.0, 2500.0)
+
+    data = {
+        'gender': gender,
+        'SeniorCitizen': senior_citizen,
+        'Partner': partner,
+        'Dependents': dependents,
+        'tenure': tenure,
+        'PhoneService': phone_service,
+        'MultipleLines': multiple_lines,
+        'InternetService': internet_service,
+        'Contract': contract,
+        'PaperlessBilling': paperless_billing,
+        'PaymentMethod': payment_method,
+        'MonthlyCharges': monthly_charges,
+        'TotalCharges': total_charges
+    }
+
+    return pd.DataFrame([data])
+
+# Get user input
+input_df = user_input_features()
+
+# Predict button
+if st.button("Predict Churn"):
+    # Preprocess input
+    input_processed = preprocessor.transform(input_df)
+    prediction = model.predict(input_processed)
+    probability = model.predict_proba(input_processed)[0][1]
+
+    # Display result
+    st.subheader("Prediction Result")
+    if prediction[0] == 1:
+        st.error(f"The customer is **likely to churn** (Probability: {probability:.2f})")
+    else:
+        st.success(f"The customer is **not likely to churn** (Probability: {probability:.2f})")
