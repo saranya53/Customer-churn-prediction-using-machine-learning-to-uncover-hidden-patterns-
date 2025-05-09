@@ -1,0 +1,10 @@
+pandas
+numpy
+matplotlib
+scikit learn
+XGboost
+lightgbm
+imbalanced learn
+streamlit 
+gradio
+joblib
